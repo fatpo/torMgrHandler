@@ -14,6 +14,8 @@ from tools.MyJson import MyJsonEncoder
 class H5BaseHandler(tornado.web.RequestHandler):
     DataDao = None
     HtmlPath = ""
+    post_filter_key_lst = []  # post方法中屏蔽的key列表
+    put_filter_key_lst = []  # get方法中屏蔽的key列表
 
     def prepare(self):
         self.pools = [app_pool]
@@ -117,9 +119,13 @@ class H5BaseHandler(tornado.web.RequestHandler):
     @tornado.gen.coroutine
     @tornado.web.authenticated
     def post(self):
-        dic = self.request.arguments
+        dic = {}
         logging.info("新增dic如下")
-        for key, value in dic.iteritems():
+        for key, value in self.request.arguments.iteritems():
+            if key in self.post_filter_key_lst:
+                logging.info("跳过key=%s" % key)
+                continue
+
             dic[key] = value[0]
             logging.info("%s=%s" % (key, value[0]))
 
@@ -171,9 +177,13 @@ class H5BaseHandler(tornado.web.RequestHandler):
     @tornado.gen.coroutine
     @tornado.web.authenticated
     def put(self):
-        dic = self.request.arguments
+        dic = {}
         logging.info("更新dic如下")
-        for key, value in dic.iteritems():
+        for key, value in self.request.arguments.iteritems():
+            if key in self.put_filter_key_lst:
+                logging.info("跳过key=%s" % key)
+                continue
+
             dic[key] = value[0]
             logging.info("%s=%s" % (key, value[0]))
 
